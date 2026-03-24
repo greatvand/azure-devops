@@ -1,0 +1,99 @@
+
+# ─────────────────────────────────────────────
+# RESOURCE 1: Deployment
+# A Deployment manages a set of identical pods,
+# keeping the desired number of replicas alive.
+# ─────────────────────────────────────────────
+
+# Which Kubernetes API version to use.
+# Deployments belong to the 'apps' group, version v1.
+apiVersion: apps/v1
+
+# The type of resource being created.
+kind: Deployment
+
+metadata:
+  # The name of this Deployment inside the cluster.
+  name: app1-nginx-deployment
+  labels:
+    # Key-value tag to identify this Deployment as part of app1-nginx.
+    app: app1-nginx
+
+spec:
+  # Number of identical pod copies to keep running at all times.
+  replicas: 1
+
+  selector:
+    matchLabels:
+      # The Deployment manages any pod that carries this label.
+      # Must match the labels defined in template.metadata.labels below.
+      app: app1-nginx
+
+  # Pod blueprint — every pod created by this Deployment follows this template.
+  template:
+    metadata:
+      labels:
+        # Labels stamped onto every pod created by this Deployment.
+        # MUST match selector.matchLabels above, or the Deployment
+        # won't recognize its own pods.
+        app: app1-nginx
+
+    spec:
+      containers:
+        # Identifier for this container within the pod.
+        - name: app1-nginx
+
+          # Docker image to run, pulled from a private
+          # Azure Container Registry (aksdevopsacr.azurecr.io).
+          image: # to be specified
+
+          ports:
+            # The port this container listens on inside the pod.
+            # Informational only — does not expose anything externally by itself.
+            - containerPort: 80
+
+---
+
+# ─────────────────────────────────────────────
+# RESOURCE 2: Service
+# A Service gives pods a stable network endpoint
+# and routes external traffic to the right pods.
+# ─────────────────────────────────────────────
+
+# Services use the core Kubernetes API, version v1.
+apiVersion: v1
+
+# The type of resource being created.
+kind: Service
+
+metadata:
+  # The name used to refer to this Service inside the cluster.
+  name: app1-nginx-loadbalancer-service
+  labels:
+    # Tag to identify this Service as part of app1-nginx.
+    app: app1-nginx
+
+spec:
+  # LoadBalancer provisions an external Azure Load Balancer
+  # and assigns a public IP — making the app accessible from the internet.
+  type: LoadBalancer
+
+  selector:
+    # The glue between Service and Deployment.
+    # Traffic is forwarded to any pod carrying this label,
+    # which matches the pods created by the Deployment above.
+    app: app1-nginx
+
+  ports:
+    # port: the external port the Load Balancer listens on.
+    - port: 80
+      # targetPort: the port on the pod that traffic is forwarded to.
+      # Matches containerPort: 80 defined in the Deployment.
+      targetPort: 80
+
+# ─────────────────────────────────────────────
+# Traffic flow:
+# Internet → Azure Load Balancer (port 80)
+#          → Service (selector: app1-nginx)
+#          → Pod running nginx (port 80)
+# ─────────────────────────────────────────────
