@@ -45,7 +45,7 @@ spec:
 
           # Docker image to run, pulled from a private
           # Azure Container Registry (aksdevopsacr.azurecr.io).
-          image: # to be specified
+          image: demo1112.azurecr.io/greatvandazuredevops:latest
 
           ports:
             # The port this container listens on inside the pod.
