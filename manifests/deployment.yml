@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: greatvandazuredevops 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: greatvandazuredevops
+  template:
+    metadata:
+      labels:
+        app: greatvandazuredevops 
+    spec:
+      containers:
+        - name: greatvandazuredevops 
+          image: demo1112.azurecr.io/greatvandazuredevops
+          ports:
+          - containerPort: 80
